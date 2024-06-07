@@ -12,8 +12,8 @@ run_ceph_osd_bench() {
     if [ $? -eq 0 ]; then
       echo "Output for run $run:"
       echo "$output"
-      iops=$(echo "$output" | grep 'IOPS' | awk '{print $3}')
-      results+=("$iops $osd_id $output")
+      iops=$(echo "$output" | grep -oP '"iops": \K[0-9.]+')
+      results+=("$osd_id: $iops")
     else
       echo "Failed to run ceph osd bench for osd.$osd_id on run $run. Error:"
       echo "$output"
@@ -26,7 +26,7 @@ run_ceph_osd_bench() {
 # Function to sort results by IOPS
 sort_results() {
   local results=("$@")
-  printf "%s\n" "${results[@]}" | sort -n
+  printf "%s\n" "${results[@]}" | sort -t ':' -k2 -n
 }
 
 # Main script
