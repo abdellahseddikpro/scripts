@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package containerd.services.images.v1;
+
+service Images {
+    rpc Prune (PruneRequest) returns (stream PruneResponse);
+}
+
+message PruneRequest {}
+
+message PruneResponse {
+    string message = 1;
+}

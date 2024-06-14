@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "prune-images.fullname" . }}
+  labels:
+    {{- include "prune-images.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "prune-images.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "prune-images.fullname" . }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: CONTAINER_ENGINE
+          value: "{{ .Values.containerEngine }}"
+        - name: LAUNCH_HOUR
+          value: "{{ .Values.launchHour }}"
+        volumeMounts:
+        {{- if eq .Values.containerEngine "docker" }}
+        - mountPath: /var/run/docker.sock
+          name: docker-socket
+        {{- else if eq .Values.containerEngine "containerd" }}
+        - mountPath: /run/containerd/containerd.sock
+          name: containerd-socket
+        {{- end }}
+      volumes:
+      {{- if eq .Values.containerEngine "docker" }}
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      {{- else if eq .Values.containerEngine "containerd" }}
+      - name: containerd-socket
+        hostPath:
+          path: /run/containerd/containerd.sock
+      {{- end }}
+      tolerations:
+{{- toYaml .Values.tolerations | nindent 8 }}
+      nodeSelector:
+{{- toYaml .Values.nodeSelector | nindent 8 }}

@@ -1,0 +1,10 @@
+image:
+  repository: your-docker-image
+  tag: latest
+  pullPolicy: IfNotPresent
+
+containerEngine: docker
+launchHour: "02:00"
+tolerations:
+- operator: "Exists"
+nodeSelector: {}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: prune-images
+description: A Helm chart for Kubernetes to deploy a DaemonSet for image pruning
+type: application
+version: 0.1.0
+appVersion: "1.0"
