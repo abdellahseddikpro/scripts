@@ -26,16 +26,11 @@ def prune_docker_images():
         logging.error(f"Error pruning Docker images: {e}")
 
 def prune_containerd_images():
-    channel = grpc.insecure_channel("unix:///run/containerd/containerd.sock")
-    client = services.ImagesStub(channel)
-    request = messages.PruneRequest()
     try:
-        response = client.Prune(request)
-        for msg in response:
-            print(msg)
-        logging.info("containerd images pruned successfully.")
-    except Exception as e:
-        logging.error(f"Error pruning containerd images: {e}")
+        result = subprocess.run(['ctr', '-n', 'k8s.io', 'images', 'prune'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logging.info(f"containerd images pruned successfully. Output: {result.stdout.decode('utf-8')}")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error pruning containerd images: {e.stderr.decode('utf-8')}")
 
 def prune_images():
     if container_engine == "docker":
