@@ -2,12 +2,8 @@ import os
 import schedule
 import time
 from dotenv import load_dotenv
-import docker
-import grpc
-import containerd_services_pb2_grpc as services
-import containerd_services_pb2 as messages
 import logging
-
+import subprocess
 # Load environment variables from .env file
 load_dotenv()
 
@@ -18,12 +14,11 @@ launch_hour =  str(os.getenv("LAUNCH_HOUR"))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def prune_docker_images():
-    client = docker.from_env()
     try:
-        client.images.prune(filters={'dangling': False})
-        logging.info("Docker images pruned successfully.")
-    except Exception as e:
-        logging.error(f"Error pruning Docker images: {e}")
+        result = subprocess.run(['docker', 'image', 'prune', '-af'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logging.info(f"Docker images pruned successfully. Output: {result.stdout.decode('utf-8')}")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error pruning Docker images: {e.stderr.decode('utf-8')}")
 
 def prune_containerd_images():
     try:
