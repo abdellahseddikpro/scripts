@@ -15,12 +15,12 @@ if [ -z "$NAMESPACES" ]; then
     exit 1
 fi
 
-declare -A container_image_map
-
 # Iterate over the matched namespaces
 for NAMESPACE in $NAMESPACES; do
     echo "Namespace: $NAMESPACE"
-    
+
+    declare -A container_image_map  # Reinitialize the map for each namespace
+
     # Get all pods in the current namespace
     PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
     
