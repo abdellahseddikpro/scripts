@@ -15,14 +15,16 @@ if [ -z "$NAMESPACES" ]; then
     exit 1
 fi
 
+declare -A container_image_map
+
 # Iterate over the matched namespaces
 for NAMESPACE in $NAMESPACES; do
     echo "Namespace: $NAMESPACE"
+    
     # Get all pods in the current namespace
     PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}')
     
     for POD in $PODS; do
-        echo "  Pod: $POD"
         # Get containers in the current pod
         CONTAINERS=$(kubectl get pod $POD -n $NAMESPACE -o jsonpath='{.spec.containers[*].name}')
         IMAGES=$(kubectl get pod $POD -n $NAMESPACE -o jsonpath='{.spec.containers[*].image}')
@@ -31,8 +33,14 @@ for NAMESPACE in $NAMESPACES; do
         IFS=' ' read -r -a IMAGE_ARRAY <<< "$IMAGES"
         
         for i in "${!CONTAINER_ARRAY[@]}"; do
-            echo "    Container Name: ${CONTAINER_ARRAY[$i]}"
-            echo "    Image: ${IMAGE_ARRAY[$i]}"
+            container_name="${CONTAINER_ARRAY[$i]}"
+            container_image="${IMAGE_ARRAY[$i]}"
+            container_image_map["$container_name"]="$container_image"
         done
+    done
+    
+    for container_name in "${!container_image_map[@]}"; do
+        echo "  Container Name: $container_name"
+        echo "  Image: ${container_image_map[$container_name]}"
     done
 done
