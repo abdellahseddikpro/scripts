@@ -1,0 +1,14 @@
+- name: Get worker node hostnames and IPs using jsonpath
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Get hostnames and IPs of nodes labeled group=worker
+      command: >
+        kubectl get nodes -l group=worker
+        -o jsonpath={range .items[*]}{"{\"hostname\":\""}{.metadata.name}{"\",\"ip\":\""}{range .status.addresses[?(@.type=="InternalIP")]}{.address}{"\"},\n"}{end}{end}
+      register: raw_output
+      changed_when: false
+
+    - name: Set fact from parsed kubectl output
+      set_fact:
+        kube_worker_info: "{{ raw_output.stdout | regex_findallall('{\"hostname\":\"[^\"]+\",\"ip\":\"[^\"]+\"}') | map('from_json') | list }}"
