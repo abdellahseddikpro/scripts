@@ -4,8 +4,7 @@
   tasks:
     - name: Get worker node hostnames and IPs using jsonpath
       command: >
-        kubectl get nodes -l group=worker
-        -o jsonpath={range .items[*]}{"{\"hostname\":\""}{.metadata.name}{"\",\"ip\":\""}{range .status.addresses[?(@.type==\"InternalIP\")]}{.address}{"\"}\n"}{end}{end}
+        kubectl get nodes -l group=worker -o 'jsonpath={range .items[*]}{"{\"hostname\":\""}{.metadata.name}{"\",\"ip\":\""}{range .status.addresses[?(@.type=="InternalIP")]}{.address}{"\"}\n"}{end}{end}'
       register: raw_nodes
       changed_when: false
 
